@@ -1,0 +1,881 @@
+openapi: 3.0.1
+info:
+  version: 0.1.0
+servers:
+  - url: http://localhost:8001
+security:
+  - JWT: []
+paths:
+  /api/v1/credit-calculator/lead:
+    post:
+      tags:
+        - Кредитный калькулятор
+      summary: Создать кредит на основе данных калькулятора
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                banks:
+                  type: array
+                  description: Слаги банков, see BankSlugType
+                  items:
+                    type: string
+                lead:
+                  $ref: '#/components/schemas/Lead'
+        required: false
+      responses:
+        201:
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreditRequest'
+  /api/v1/credit-calculator:
+    post:
+      tags:
+        - Кредитный калькулятор
+      summary: Произвести расчёты
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Lead'
+        required: false
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CalculateContainer'
+        400:
+          description: Bad Request
+          content: {}
+  /api/v1/credit-request/{id}:
+    get:
+      tags:
+        - Кредит
+      summary: Получить сущность "кредит"
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreditRequest'
+  /api/v1/enum:
+    get:
+      tags:
+        - Справочник
+      parameters:
+        - name: names
+          in: query
+          schema:
+            type: string
+      responses:
+        200:
+          description: OK
+          content: {}
+  /api/v1/person:
+    put:
+      tags:
+        - Клиент
+      summary: Обновит данные клиента
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Person'
+        required: false
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Person'
+    post:
+      tags:
+        - Клиент
+      summary: Создаст нового клиента
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Person'
+        required: false
+      responses:
+        201:
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Person'
+    patch:
+      tags:
+        - Клиент
+      summary: Обновит часть данных клиента
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Person'
+        required: false
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Person'
+
+  /api/v1/person/{id}:
+    get:
+      tags:
+        - Клиент
+      summary: Вернет данные клиента
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            pattern: \d+
+            type: string
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Person'
+
+  /api/v1/person/suggest:
+    get:
+      tags:
+        - Клиент
+      summary: Получение подсказок, поиск по клиентам
+      parameters:
+        - name: query
+          in: query
+          description: Поисковый запрос
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: string
+            default: "1"
+        - name: perPage
+          in: query
+          schema:
+            type: string
+            default: "10"
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Person'
+
+  /api/v1/users/profile:
+    get:
+      tags:
+        - Пользователи
+      summary: Получить профиль пользователя
+      responses:
+        200:
+          description: Успешно
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+  /api/v1/publisher:
+    post:
+      responses:
+        default:
+          description: ""
+          content: {}
+
+components:
+  schemas:
+    LeadParticipant:
+      required:
+        - jobType
+      type: object
+      properties:
+        personId:
+          type: integer
+          nullable: true
+        role:
+          title: Роль в сделке
+          type: string
+          enum:
+            - borrower
+            - coBorrower
+            - guarantor
+        age:
+          title: Возраст
+          type: integer
+        firstName:
+          title: Имя
+          type: string
+        lastName:
+          title: Фамилия
+          type: string
+        patronymic:
+          title: Отчество
+          type: string
+        phoneNumber:
+          title: Номер телефона
+          pattern: '[0-9]{5,10}'
+          type: string
+        email:
+          title: Почтовый адрес
+          type: string
+        contactPerson:
+          title: Контактное лицо
+          type: boolean
+        maritalStatus:
+          title: Семейное положение
+          type: string
+          enum:
+            - single
+            - married
+        marriageContract:
+          title: Брачный контракт
+          type: boolean
+        citizenship:
+          title: Гражданство
+          type: string
+          enum:
+            - russia
+            - other
+        registrationType:
+          title: Регистрация
+          type: string
+          enum:
+            - permanent
+            - temporary
+        residencePermit:
+          title: Есть вид на жительство?
+          type: boolean
+        spouse:
+          title: Супруг
+          type: boolean
+        taxResidentRF:
+          title: Налоговый нерезидент РФ
+          type: boolean
+        involvedInPayment:
+          title: Участвует в выплатах
+          type: boolean
+        jobType:
+          title: Тип занятости
+          type: string
+          enum:
+            - recruitment
+            - individual_entrepreneur
+            - business
+        proofOfIncome:
+          title: Документ подтвержающий доход
+          type: string
+          enum:
+            - 2ndfl
+            - bankForm
+            - 2docs
+        lawyerOrNotary:
+          title: Адвокат или нотариус
+          type: boolean
+        military:
+          title: Сотрудник силовых структур
+          type: boolean
+        lastExperience:
+          title: Стаж на последнем месте работы (мес)
+          type: integer
+        generalExperience:
+          title: Общий стаж
+          type: integer
+        tenureOfBusiness:
+          title: Срок владения бизнесом (мес.)
+          type: integer
+        percentOfBusiness:
+          title: Процент владения бизнесом
+          type: number
+    CreditRequest:
+      type: object
+      properties:
+        requests:
+          type: array
+          items:
+            $ref: '#/components/schemas/BankRequest'
+        id:
+          type: integer
+    BankRequest:
+      type: object
+      properties:
+        product:
+          type: object
+          discriminator:
+            propertyName: type
+            mapping:
+              mortgage:     '#/components/schemas/Mortgage'
+              refinancing:  '#/components/schemas/Refinancing'
+          oneOf:
+            - $ref: '#/components/schemas/Mortgage'
+            - $ref: '#/components/schemas/Refinancing'
+        bankId:
+          type: integer
+        bankSlug:
+          type: string
+        creditId:
+          type: integer
+        id:
+          type: integer
+    Bank:
+      required:
+        - name
+      type: object
+      properties:
+        name:
+          title: Название банка
+          type: string
+        slug:
+          title: Алиас банка
+          type: string
+          enum:
+            - unicredit
+            - sovkombank
+            - metallinvest
+            - gazprom
+            - domrf
+            - deltacredit
+        partnerRewardPercent:
+          title: Процент партнёрского вознаграждения от выданных заёмных средств
+          type: number
+          format: float
+        logo:
+          title: Путь к логотипу
+          type: string
+        color:
+          title: Цвет плашки на фронте
+          type: string
+        id:
+          type: integer
+    CalculateContainer:
+      type: object
+      properties:
+        bank:
+          $ref: '#/components/schemas/Bank'
+        resolution:
+          $ref: '#/components/schemas/Resolution'
+        partnerReward:
+          title: Вознаграждение партнёра
+          type: number
+          format: float
+    Document:
+      description: "Документ"
+      type: object
+      properties:
+        type:
+          description: "Тип документа"
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        files:
+          description: "ID файлов"
+          type: array
+          items:
+            type: integer
+        id:
+          type: integer
+    Refinancing:
+      type: object
+      properties:
+        restOfDebt:
+          type: integer
+        realtyCity:
+          type: string
+        participants:
+          title: Участники сделки
+          type: array
+          items:
+            $ref: '#/components/schemas/Participant'
+        creditPeriod:
+          title: Срок кредита
+          type: integer
+        creditSum:
+          title: Сумма кредита
+          type: integer
+        militaryMortgage:
+          title: Военная ипотека?
+          type: boolean
+        maternityCapital:
+          title: Есть материнский капитал?
+          type: boolean
+        maternityCapitalSum:
+          title: Сумма материнского капитала
+          type: integer
+        realtySellerType:
+          title: Продавец недвижимости
+          type: string
+          enum:
+            - developer
+            - individual
+            - legal
+            - assignationOfLegal
+            - assignationOfIndividual
+        realtyAddress:
+          $ref: '#/components/schemas/Address'
+        realtyType:
+          title: Тип недвижимости
+          type: string
+        needRealtyAccreditation:
+          title: Нужна акредитация объекта?
+          type: boolean
+        realtyPrice:
+          title: Стоимость недвижки
+          type: integer
+        type:
+          type: string
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        firstName:
+          type: string
+        lastName:
+          type: string
+        patronymic:
+          type: string
+        email:
+          type: string
+        phoneNumber:
+          type: string
+        active:
+          type: boolean
+        roles:
+          type: array
+          items:
+            type: string
+    Credit:
+      type: object
+      properties:
+        percentRate:
+          title: Процентная ставка
+          type: number
+          format: float
+        monthlyPayment:
+          title: Ежемесячный платёж
+          type: number
+          format: float
+        totalSum:
+          title: Полная сумма с учётом переплат
+          type: integer
+        creditSum:
+          title: Сумма заёмных средств
+          type: integer
+        initialPayment:
+          title: Размер первоначального взноса
+          type: integer
+        creditPeriod:
+          title: Срок кредита (в мес.)
+          type: integer
+        overpayment:
+          title: Результирующая переплата по кредиту
+          type: integer
+    Participant:
+      type: object
+      properties:
+        personId:
+          type: integer
+        involvedInPayment:
+          title: Участвует в выплатах
+          type: boolean
+        role:
+          title: Роль в сделке
+          type: string
+          enum:
+            - borrower
+            - coBorrower
+            - guarantor
+        lastName:
+          title: Фамилия
+          type: string
+        firstName:
+          title: Имя
+          type: string
+        patronymic:
+          title: Отчество
+          type: string
+        age:
+          title: Возраст (полных лет)
+          maximum: 120
+          minimum: 16
+          type: integer
+        maritalStatus:
+          title: Семейное положение
+          type: string
+          enum:
+            - single
+            - married
+        marriageContract:
+          title: Есть брачный договор?
+          type: boolean
+        citizenship:
+          title: Гражданство
+          type: string
+          enum:
+            - russia
+            - other
+        registrationType:
+          title: Регистрация
+          type: string
+          enum:
+            - mortgage
+            - refinancing
+        residencePermit:
+          title: Есть вид на жительство?
+          type: boolean
+        jobType:
+          title: Трудоустройство
+          type: string
+          enum:
+            - recruitment
+            - individual_entrepreneur
+            - business
+        jobContractType:
+          title: Тип договора (трудовой, гпх)
+          type: string
+          enum:
+            - employment
+            - gph
+        lawyerOrNotary:
+          title: Адвокат или нотариус?
+          type: boolean
+        military:
+          title: Военнообязаный?
+          type: boolean
+        partTimeJob:
+          title: Есть работа по совместительству?
+          type: boolean
+        proofOfIncome:
+          title: Подтверждение дохода
+          type: string
+          enum:
+            - 2ndfl
+            - bankForm
+            - 2docs
+        lastExperience:
+          title: Стаж на последнем месте работы (мес)
+          type: integer
+        generalExperience:
+          title: Общий стаж (мес)
+          type: integer
+        tenureOfBusiness:
+          title: Срок владения ИП или бизнесом (мес.)
+          type: integer
+        percentOfBusiness:
+          title: Процент владения бизнесом
+          type: number
+        overduePayment:
+          title: Есть просрочки по текущим кредитам?
+          type: boolean
+        taxResidentRF:
+          title: Налоговый резидент РФ?
+          type: boolean
+        gender:
+          title: Пол
+          type: string
+          enum:
+            - male
+            - female
+        documents:
+          title: Документы
+          type: array
+          items:
+            $ref: '#/components/schemas/Document'
+    Mortgage:
+      type: object
+      properties:
+        initialPayment:
+          type: integer
+        realtyCity:
+          type: string
+        participants:
+          title: Участники сделки
+          type: array
+          items:
+            $ref: '#/components/schemas/Participant'
+        creditPeriod:
+          title: Срок кредита
+          type: integer
+        creditSum:
+          title: Сумма кредита
+          type: integer
+        militaryMortgage:
+          title: Военная ипотека?
+          type: boolean
+        maternityCapital:
+          title: Есть материнский капитал?
+          type: boolean
+        maternityCapitalSum:
+          title: Сумма материнского капитала
+          type: integer
+        realtySellerType:
+          title: Продавец недвижимости
+          type: string
+          enum:
+            - developer
+            - individual
+            - legal
+            - assignationOfLegal
+            - assignationOfIndividual
+        realtyAddress:
+          $ref: '#/components/schemas/Address'
+        realtyType:
+          title: Тип недвижимости
+          type: string
+        needRealtyAccreditation:
+          title: Нужна акредитация объекта?
+          type: boolean
+        realtyPrice:
+          title: Стоимость недвижки
+          type: integer
+        type:
+          type: string
+    Lead:
+      required:
+        - creditPeriod
+        - realtyPrice
+        - realtySellerType
+        - type
+      type: object
+      properties:
+        participants:
+          title: Участники сделки
+          type: array
+          items:
+            $ref: '#/components/schemas/LeadParticipant'
+        type:
+          title: Продукт
+          type: string
+          enum:
+            - mortgage
+            - refinancing
+        needRealtyAccreditation:
+          title: Нужна аккредитация
+          type: boolean
+        militaryMortgage:
+          title: Военная ипотека
+          type: boolean
+        creditPeriod:
+          title: Срок кредита (мес.)
+          type: integer
+        initialPayment:
+          title: Первоначальный взнос (руб.) (Обязательно при Ипотеке)
+          type: integer
+        restOfDebt:
+          title: Остаток кредита (Обязательно при Рефинансировании)
+          type: integer
+        realtyType:
+          title: Тип недвижимости
+          type: string
+          enum:
+            - apartment
+            - room
+            - house
+        realtyPrice:
+          title: |-
+            Стоимость жилья (руб.)
+            Обязательно при расчёте по стоимости квартиры
+          type: integer
+          description: 'TODO: сейчас предполагается, что все расчёты производятся
+            только по стоимости жилья, но в будущем будет "Тип расчёты", в завивсимости
+            от этого "realtyPrice" станет опциональным'
+        realtyAddress:
+          $ref: '#/components/schemas/Address'
+        realtySellerType:
+          title: Продавец
+          type: string
+          enum:
+            - developer
+            - individual
+            - legal
+            - assignationOfLegal
+            - assignationOfIndividual
+        maternityCapital:
+          title: Использование материнского капитала
+          type: boolean
+        maternityCapitalSum:
+          title: Размер взноса из мат. капитала
+          type: integer
+    Address:
+      type: object
+      properties:
+        inline:
+          title: Адрес строкой
+          type: string
+        provinces:
+          title: Области в которые входит обьект
+          type: array
+          items:
+            type: string
+    Person:
+      required:
+        - firstName
+      type: object
+      properties:
+        fullName:
+          title: ФИО
+          type: string
+        lastName:
+          title: Фамилия
+          type: string
+        firstName:
+          title: Имя
+          type: string
+        patronymic:
+          title: Отчество
+          type: string
+        age:
+          title: Возраст (полных лет)
+          maximum: 8E+1
+          minimum: 16
+          type: integer
+        maritalStatus:
+          title: Семейное положение
+          type: string
+          enum:
+            - single
+            - married
+        marriageContract:
+          title: Есть брачный контракт?
+          type: boolean
+        citizenship:
+          title: Гражданство
+          type: string
+          enum:
+            - russia
+            - other
+        registrationType:
+          title: Регистрация (временная|постоянная)
+          type: string
+          enum:
+            - permanent
+            - temporary
+        residencePermit:
+          title: Есть вид на жительство?
+          type: boolean
+        jobType:
+          title: Трудоустройсто (найм|ип\бизнес)
+          type: string
+          enum:
+            - recruitment
+            - individual_entrepreneur
+            - business
+        jobContractType:
+          title: Договор найма (трудовой договор|ГПХ)
+          type: string
+          enum:
+            - gph
+            - employment
+        lawyerOrNotary:
+          title: Адвокат или нотариус?
+          type: boolean
+        military:
+          title: Военнообяан?
+          type: boolean
+        partTimeJob:
+          title: Есть работа по совместительству?
+          type: boolean
+        proofOfIncome:
+          title: Подтверждение дохода
+          type: string
+          enum:
+            - 2ndfl
+            - bankForm
+            - 2docs
+        lastExperience:
+          title: Стаж на последнем месте работы (мес)
+          type: integer
+        generalExperience:
+          title: Общий стаж (мес)
+          type: integer
+        tenureOfBusiness:
+          title: Срок владения ИП или бизнесом (мес.)
+          type: integer
+        percentOfBusiness:
+          title: Процент владения бизнесом
+          type: number
+        overduePayment:
+          title: Есть просрочки по текущим кредитам?
+          type: boolean
+        taxResidentRF:
+          title: Налоговый резидент РФ?
+          type: boolean
+        gender:
+          title: Пол
+          type: string
+          enum:
+            - male
+            - female
+        documents:
+          title: Документы
+          type: array
+          items:
+            $ref: '#/components/schemas/Document'
+        id:
+          type: integer
+    Resolution:
+      type: object
+      properties:
+        info:
+          title: Дополнительная информация
+          type: array
+          items:
+            type: string
+        status:
+          title: Резолюция по данному лиду и банку
+          type: string
+          enum:
+            - approved
+            - rejected
+            - unknown
+        reasons:
+          title: Причины отказа
+          type: array
+          items:
+            type: string
+        credit:
+          $ref: '#/components/schemas/Credit'
+        bankSlug:
+          title: Слаг банка
+          type: string
+  responses:
+    BadRequest:
+      description: Bad Request
+      content: {}
+    NotFound:
+      description: Entity not found
+      content: {}
+  securitySchemes:
+    JWT:
+      type: apiKey
+      description: 'Авторизация по JWT токену: Bearer {JWT}'
+      name: Authorization
+      in: header

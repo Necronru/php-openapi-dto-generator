@@ -1,0 +1,62 @@
+#!/usr/bin/env php
+<?php require_once __DIR__ . '/../vendor/autoload.php';
+
+use Necronru\DtoGenerator\ClassDefinition;
+use Symfony\Component\Console\Helper\Table;
+use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Yaml\Yaml;
+use Symfony\Component\Console\Application;
+use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
+
+use Necronru\DtoGenerator\Provider\OpenApiV3;
+
+(new Application('Data transfer object generator', '1.0.0'))
+    ->register('generate')
+    ->setAliases(['g'])
+    ->addArgument('file', InputArgument::REQUIRED, 'OpenAPI v3 specification')
+    ->addArgument('output', InputArgument::OPTIONAL, 'Output dir', dirname(__DIR__) . '/tests/_generated')
+    ->addOption('namespace', null, InputOption::VALUE_OPTIONAL, 'PHP default namespace')
+    ->addOption('classPostfix', null, InputOption::VALUE_OPTIONAL, '', '')
+    ->addOption('dry-run', null, InputOption::VALUE_NONE, 'Generate without export to output dir')
+    ->setCode(function (InputInterface $input, OutputInterface $output) {
+
+        $isDryRun = $input->getOption('dry-run');
+
+        $spec = Yaml::parseFile(realpath($input->getArgument('file')));
+
+        $namespace = $input->getOption('namespace');
+        $classPostfix = $input->getOption('classPostfix');
+
+        $classes = (new OpenApiV3($spec, $classPostfix))();
+
+        $outputDir = $input->getArgument('output');
+
+        $table = new Table($output);
+
+        /** @var ClassDefinition[] $classes */
+        foreach ($classes as $className => $definition) {
+            $fileName     = sprintf('%s/%s.php', $outputDir, $className);
+            $phpNamespace = $namespace ? sprintf("\nnamespace %s;\n", $namespace) : '';
+            $content      = sprintf("<?php\n%s\n%s\n", $phpNamespace, $definition->getClass());
+
+            if (!$isDryRun) {
+                file_put_contents($fileName, $content);
+            }
+
+            $table->addRow([
+                ($namespace ? $namespace . '\\' : '') . $className,
+                $fileName
+            ]);
+
+            $output->writeln('<fg=magenta>' . $content . '</>', OutputInterface::VERBOSITY_VERY_VERBOSE);
+        }
+
+        $table->render();
+
+        $output->writeln(sprintf('<fg=green>Done. Generated %s classes.</>', count($classes)));
+    })
+    ->getApplication()
+    ->setDefaultCommand('help')// Single command application
+    ->run();

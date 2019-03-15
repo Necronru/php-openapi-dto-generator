@@ -1,12 +1,26 @@
 {
-    "name": "necronru/php-openapi-dto-generator",
-    "description": "Generate DTO classes from OpenAPI spec",
-    "authors": [
-        {
-            "name": "Roman Toroshin",
-            "email": "necronru@gmail.com"
-        }
-    ],
-    "minimum-stability": "dev",
-    "require": {}
+  "name": "necronru/php-openapi-dto-generator",
+  "description": "Generate DTO classes from OpenAPI spec",
+  "authors": [
+    {
+      "name": "Roman Toroshin",
+      "email": "necronru@gmail.com"
+    }
+  ],
+  "minimum-stability": "stable",
+  "autoload": {
+    "psr-4": {
+      "Necronru\\DtoGenerator\\": "src/"
+    }
+  },
+  "require": {
+    "ext-json": "*",
+    "nette/php-generator": "^3.2",
+    "symfony/inflector": "^4.2",
+    "symfony/console": "^4.2",
+    "symfony/yaml": "^4.2"
+  },
+  "require-dev": {
+    "symfony/validator": "^4.2"
+  }
 }
