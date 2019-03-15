@@ -1,0 +1,12 @@
+{
+    "name": "necronru/php-openapi-dto-generator",
+    "description": "Generate DTO classes from OpenAPI spec",
+    "authors": [
+        {
+            "name": "Roman Toroshin",
+            "email": "necronru@gmail.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {}
+}
