@@ -1,15 +1,16 @@
+---
 kind: pipeline
 
 steps:
-  - name: test
-    image: php
-    commands:
-      - php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
-      - php composer-setup.php --install-dir=/usr/bin --filename=composer
-      - php -r "unlink('composer-setup.php');"
-      - composer install
-      - php vendor/bin/phpunit
+- name: test
+  image: php
+  commands:
+  - "php -r \"copy('https://getcomposer.org/installer', 'composer-setup.php');\""
+  - php composer-setup.php --install-dir=/usr/bin --filename=composer
+  - "php -r \"unlink('composer-setup.php');\""
+  - composer install
+  - php vendor/bin/phpunit
 
 trigger:
   branch:
-    - master
+  - master
