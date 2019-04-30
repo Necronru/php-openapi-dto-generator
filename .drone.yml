@@ -1,4 +1,5 @@
 kind: pipeline
+
 steps:
   - name: test
     image: php
@@ -8,3 +9,7 @@ steps:
       - php -r "unlink('composer-setup.php');"
       - composer install
       - php vendor/bin/phpunit
+
+trigger:
+  branch:
+    - master
