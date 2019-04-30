@@ -5,7 +5,8 @@ steps:
 - name: test
   image: php:7.3-cli
   commands:
-    - "apt get install zip libzip-dev libmcrypt-dev"
+    - "apt-get update"
+    - "apt-get install zip libzip-dev libmcrypt-dev -y"
     - "pecl install zip"
     - "php -r \"copy('https://getcomposer.org/installer', 'composer-setup.php');\""
     - "php composer-setup.php --install-dir=/usr/bin --filename=composer"
