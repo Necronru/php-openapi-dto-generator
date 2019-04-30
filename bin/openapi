@@ -2,6 +2,7 @@
 <?php require_once __DIR__ . '/../vendor/autoload.php';
 
 use Necronru\DtoGenerator\ClassDefinition;
+use Necronru\DtoGenerator\Exporter\PHPFileExporter;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Yaml\Yaml;
@@ -22,40 +23,15 @@ use Necronru\DtoGenerator\Provider\OpenApiV3;
     ->addOption('dry-run', null, InputOption::VALUE_NONE, 'Generate without export to output dir')
     ->setCode(function (InputInterface $input, OutputInterface $output) {
 
-        $isDryRun = $input->getOption('dry-run');
+        $isDryRun     = $input->getOption('dry-run');
+        $namespace    = $input->getOption('namespace');
+        $classPostfix = $input->getOption('classPostfix');
+        $outputDir    = $input->getArgument('output');
 
         $spec = Yaml::parseFile(realpath($input->getArgument('file')));
 
-        $namespace = $input->getOption('namespace');
-        $classPostfix = $input->getOption('classPostfix');
-
-        $classes = (new OpenApiV3($spec, $classPostfix))();
-
-        $outputDir = $input->getArgument('output');
-
-        $table = new Table($output);
-
-        /** @var ClassDefinition[] $classes */
-        foreach ($classes as $className => $definition) {
-            $fileName     = sprintf('%s/%s.php', $outputDir, $className);
-            $phpNamespace = $namespace ? sprintf("\nnamespace %s;\n", $namespace) : '';
-            $content      = sprintf("<?php\n%s\n%s\n", $phpNamespace, $definition->getClass());
-
-            if (!$isDryRun) {
-                file_put_contents($fileName, $content);
-            }
-
-            $table->addRow([
-                ($namespace ? $namespace . '\\' : '') . $className,
-                $fileName
-            ]);
-
-            $output->writeln('<fg=magenta>' . $content . '</>', OutputInterface::VERBOSITY_VERY_VERBOSE);
-        }
-
-        $table->render();
-
-        $output->writeln(sprintf('<fg=green>Done. Generated %s classes.</>', count($classes)));
+        $exporter = new PHPFileExporter(new OpenApiV3($spec, $classPostfix), $output);
+        $exporter->export($outputDir, $namespace, $isDryRun);
     })
     ->getApplication()
     ->setDefaultCommand('help')// Single command application

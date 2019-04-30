@@ -42,14 +42,15 @@ class ClassDefinition
         $this->getClass()->addComment($comment);
     }
 
-    public function addPublicProperty($propertyName): PropertyDefinition
+    public function addProperty($propertyName, $visibility = 'public'): PropertyDefinition
     {
         $property = $this->getClass()
             ->addProperty($propertyName)
-            ->setVisibility('public')
+            ->setVisibility($visibility)
         ;
 
         $this->propertyDefinitions[$propertyName] = new PropertyDefinition($this->getClass(), $property);
+
 
         return $this->propertyDefinitions[$propertyName];
     }

@@ -101,4 +101,18 @@ SETTERBODY;
             ->addParameter($this->getName())->setTypeHint($type)
         ;
     }
+
+    public function addGetter(string $type = null, bool $nullable = false): void
+    {
+        $getterBody = <<<SETTERBODY
+return \$this->{$this->getName()};
+SETTERBODY;
+
+        $this->classType
+            ->addMethod('get' . ucfirst($this->getName()))
+            ->addComment(sprintf("@return %s\n", $type))
+//            ->setReturnType($type) // todo
+            ->setBody($getterBody)
+        ;
+    }
 }

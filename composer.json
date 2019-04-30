@@ -13,14 +13,21 @@
       "Necronru\\DtoGenerator\\": "src/"
     }
   },
+  "autoload-dev": {
+    "psr-4": {
+      "Necronru\\DtoGenerator\\Tests\\": "tests/"
+    }
+  },
   "require": {
     "ext-json": "*",
     "nette/php-generator": "^3.2",
     "symfony/inflector": "^4.2",
     "symfony/console": "^4.2",
-    "symfony/yaml": "^4.2"
+    "symfony/yaml": "^4.2",
+    "psr/log": "^1.1"
   },
   "require-dev": {
-    "symfony/validator": "^4.2"
+    "symfony/validator": "^4.2",
+    "phpunit/phpunit": "^8.1"
   }
 }

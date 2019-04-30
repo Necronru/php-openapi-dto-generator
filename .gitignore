@@ -1,3 +1,6 @@
 /.idea
 /.var
 /vendor
+/cache
+
+.phpunit.result.cache
